@@ -191,6 +191,7 @@ app.get('/bestMove', function (req, res) {
 	game.load(fen);
 	
 	res.setHeader('Content-Type', 'application/json');
+	res.setHeader('Access-Control-Allow-Origin', 'http://localhost');
 	
 	if (game.game_over()) {        
 		var returnJson = JSON.stringify({game_over: 1});
@@ -201,6 +202,7 @@ app.get('/bestMove', function (req, res) {
     
     var d = new Date().getTime();
     var bestMove = minimaxRoot(depth, game, true);
+	console.log(bestMove);	
     var d2 = new Date().getTime();
     var moveTime = (d2 - d);
     var positionsPerS = ( positionCount * 1000 / moveTime);

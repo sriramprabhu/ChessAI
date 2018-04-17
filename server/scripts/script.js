@@ -188,41 +188,48 @@ var onDragStart = function (source, piece, position, orientation) {
 var makeBestMove = function () {
 	
 	var curr_fen = game.fen();
-	var depth = parseInt($('#search-depth').find(':selected').text());
-	var jsonResponse = ""
+	var depth = parseInt($('#search-depth').find(':selected').text());	
+	var jsonResponse;
 	
 	var xhr = new XMLHttpRequest();
-	xhr.open("GET", "http://localhost:3000/bestMove?fen="+curr_fen+"?depth="+depth, true);
+	xhr.open("GET", "http://localhost:3000/bestMove?fen="+curr_fen+"&depth="+depth, true);
 	xhr.onreadystatechange = function() {
-	  if (xhr.readyState == 4) {		
+	  if (xhr.readyState == 4) {				
 		jsonResponse = JSON.parse(xhr.responseText);
+		console.log(jsonResponse);
+		game_over = jsonResponse.game_over;
+		console.log(game_over);
+		if(game_over === 1) {
+			alert('Game Over');
+			return;
+		}
+		
+		var bestMove = jsonResponse.move;
+		var positionCount = jsonResponse.count;
+		var moveTime = jsonResponse.time;
+		
+		//get best move in response.
+		var positionsPerS = ( positionCount * 1000 / moveTime);
+
+		$('#position-count').text(positionCount);
+		$('#time').text(moveTime/1000 + 's');
+		$('#positions-per-s').text(positionsPerS);
+		
+		
+		console.log(bestMove);
+		console.log(positionCount);
+		
+		game.ugly_move(bestMove);
+		board.position(game.fen());
+		renderMoveHistory(game.history());
+		if (game.game_over()) {
+			alert('Game over');
+		}
 	  }
 	}
 	xhr.send();
 	
-	game_over = jsonResponse['game_over'];
-	if(game_over === 1) {
-		alert('Game Over');
-		return;
-	}
 	
-	var bestMove = jsonResponse['bestMove'];
-	var positionCount = jsonResponse['count'];
-	var moveTime = jsonResponse['time'];
-	
-	//get best move in response.
-	var positionsPerS = ( positionCount * 1000 / moveTime);
-
-    $('#position-count').text(positionCount);
-    $('#time').text(moveTime/1000 + 's');
-    $('#positions-per-s').text(positionsPerS);
-    
-    game.ugly_move(bestMove);
-    board.position(game.fen());
-    renderMoveHistory(game.history());
-    if (game.game_over()) {
-        alert('Game over');
-    }
 };
 
 
