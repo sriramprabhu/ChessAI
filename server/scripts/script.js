@@ -189,21 +189,16 @@ var makeBestMove = function () {
 	
 	var curr_fen = game.fen();
 	var depth = parseInt($('#search-depth').find(':selected').text());
+	var jsonResponse = ""
 	
-	//send xmlhttprequest for localhost:3000/bestMove?fen=curr_fen
-	if (window.XMLHttpRequest) {
-		// code for modern browsers
-		xmlhttp = new XMLHttpRequest();
-	 } else {
-		// code for old IE browsers
-		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	var xhr = new XMLHttpRequest();
+	xhr.open("GET", "http://localhost:3000/bestMove?fen="+curr_fen+"?depth="+depth, true);
+	xhr.onreadystatechange = function() {
+	  if (xhr.readyState == 4) {		
+		jsonResponse = JSON.parse(xhr.responseText);
+	  }
 	}
-	url = "http//localhost:3000/bestMove?fen="+curr_fen+"&depth="+depth;
-	console.log("Making req to:" + url);
-	xmlhttp.open("GET", url, false);
-	xmlhttp.send(null);
-	var jsonResponse = JSON.parse(xmlhttp.responseText);
-	console.log(jsonResponse);
+	xhr.send();
 	
 	game_over = jsonResponse['game_over'];
 	if(game_over === 1) {
