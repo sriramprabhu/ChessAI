@@ -1,7 +1,8 @@
-var board,
-    game = new Chess();
+var express = require('express');
+var app = express();
 
-/*The "AI" part starts here */
+var chess = require('./chess').Chess;
+var path = require('path');
 
 var minimaxRoot =function(depth, game, isMaximisingPlayer) {
 
@@ -176,120 +177,50 @@ var getPieceValue = function (piece, x, y) {
     return piece.color === 'w' ? absoluteValue : -absoluteValue;
 };
 
+app.get('/', function(req, res){
+    res.sendFile(path.join(__dirname+'/index.html'));
+});
 
-/* board visualization and games state handling */
-
-var onDragStart = function (source, piece, position, orientation) {
-    if (game.in_checkmate() === true || game.in_draw() === true ||
-        piece.search(/^b/) !== -1) {
-        return false;
-    }
-};
-
-var makeBestMove = function () {
-    var bestMove = getBestMove(game);
-    game.ugly_move(bestMove);
-    board.position(game.fen());
-    renderMoveHistory(game.history());
-    if (game.game_over()) {
-        alert('Game over');
-    }
-};
-
-
-var positionCount;
-var getBestMove = function (game) {
-    if (game.game_over()) {
-        alert('Game over');
+app.get('/bestMove', function (req, res) {
+	
+	var fen = req.query.fen;
+	var depth = req.query.depth;
+	console.log(fen);	
+	console.log(depth);
+	var game = chess();
+	game.load(fen);
+	
+	res.setHeader('Content-Type', 'application/json');
+	
+	if (game.game_over()) {        
+		var returnJson = JSON.stringify({game_over: 1});
+		res.send(returnJson);		
     }
 
     positionCount = 0;
-    var depth = parseInt($('#search-depth').find(':selected').text());
-
+    
     var d = new Date().getTime();
     var bestMove = minimaxRoot(depth, game, true);
     var d2 = new Date().getTime();
     var moveTime = (d2 - d);
     var positionsPerS = ( positionCount * 1000 / moveTime);
+	var returnJson = JSON.stringify({game_over: 0, move: bestMove, count: positionCount, time: moveTime});
+	res.send(returnJson);
+		
+});
 
-    $('#position-count').text(positionCount);
-    $('#time').text(moveTime/1000 + 's');
-    $('#positions-per-s').text(positionsPerS);
-    return bestMove;
-};
+app.use(function(req, res, next) {
+    res.status(404).send("Sorry, that route doesn't exist. Have a nice day :)");
+});
 
-var renderMoveHistory = function (moves) {
-    var historyElement = $('#move-history').empty();
-    historyElement.empty();
-    for (var i = 0; i < moves.length; i = i + 2) {
-        historyElement.append('<span>' + moves[i] + ' ' + ( moves[i + 1] ? moves[i + 1] : ' ') + '</span><br>')
-    }
-    historyElement.scrollTop(historyElement[0].scrollHeight);
+app.use('/css', express.static(path.join(__dirname, 'css/style')));
+app.use('/scripts', express.static(path.join(__dirname, 'scripts/script')));
+app.use('/img', express.static(path.join(__dirname, 'img')));
 
-};
 
-var onDrop = function (source, target) {
 
-    var move = game.move({
-        from: source,
-        to: target,
-        promotion: 'q'
-    });
+app.listen(3000, function () {
+    console.log('Example app listening on port 3000.');
+});
 
-    removeGreySquares();
-    if (move === null) {
-        return 'snapback';
-    }
 
-    renderMoveHistory(game.history());
-    window.setTimeout(makeBestMove, 250);
-};
-
-var onSnapEnd = function () {
-    board.position(game.fen());
-};
-
-var onMouseoverSquare = function(square, piece) {
-    var moves = game.moves({
-        square: square,
-        verbose: true
-    });
-
-    if (moves.length === 0) return;
-
-    greySquare(square);
-
-    for (var i = 0; i < moves.length; i++) {
-        greySquare(moves[i].to);
-    }
-};
-
-var onMouseoutSquare = function(square, piece) {
-    removeGreySquares();
-};
-
-var removeGreySquares = function() {
-    $('#board .square-55d63').css('background', '');
-};
-
-var greySquare = function(square) {
-    var squareEl = $('#board .square-' + square);
-
-    var background = '#a9a9a9';
-    if (squareEl.hasClass('black-3c85d') === true) {
-        background = '#696969';
-    }
-
-    squareEl.css('background', background);
-};
-
-var cfg = {
-    draggable: true,
-    position: 'start',
-    onDragStart: onDragStart,
-    onDrop: onDrop,
-    onMouseoutSquare: onMouseoutSquare,
-    onMouseoverSquare: onMouseoverSquare,
-    onSnapEnd: onSnapEnd
-};
-board = ChessBoard('board', cfg);
