@@ -3,6 +3,9 @@ var app = express();
 
 var chess = require('./chess').Chess;
 var path = require('path');
+//app.set('view engine', 'ejs');
+
+
 
 var minimaxRoot =function(depth, game, isMaximisingPlayer) {
 
@@ -178,7 +181,7 @@ var getPieceValue = function (piece, x, y) {
 };
 
 app.get('/', function(req, res){
-    res.sendFile(path.join(__dirname+'/index.html'));
+    res.sendFile(path.resolve(__dirname +'/index.html'));
 });
 
 app.get('/bestMove', function (req, res) {
@@ -211,14 +214,11 @@ app.get('/bestMove', function (req, res) {
 		
 });
 
+app.use(express.static('static'));
+
 app.use(function(req, res, next) {
     res.status(404).send("Sorry, that route doesn't exist. Have a nice day :)");
 });
-
-app.use('/css', express.static(path.join(__dirname, 'css/style')));
-app.use('/scripts', express.static(path.join(__dirname, 'scripts/script')));
-app.use('/img', express.static(path.join(__dirname, 'img')));
-
 
 
 app.listen(3000, function () {
