@@ -1,5 +1,9 @@
 var board, game = new Chess();
-
+/*
+test_fen = '5k2/7P/6K1/8/8/8/8/8 w - -';
+game.load(test_fen);
+*/
+console.log(game.fen());
 /*The "AI" part starts here */
 
 var minimaxRoot =function(depth, game, isMaximisingPlayer) {
@@ -244,11 +248,30 @@ var renderMoveHistory = function (moves) {
 };
 
 var onDrop = function (source, target) {
-
+	
+	var promotion = document.querySelector('input[name="promotion"]:checked').value;	
+	var piece = 'q';
+	switch(promotion) {
+		case "Queen":
+			piece = 'q';
+			break;
+		case "Rook":
+			piece = 'r';
+			break;
+		case "Knight":
+			piece = 'n';
+			break;
+		case "Bishop":
+			piece = 'b';
+			break;
+		default:
+			piece = 'q';			
+	}
+		
     var move = game.move({
         from: source,
         to: target,
-        promotion: 'q'
+        promotion: piece
     });
 
     removeGreySquares();
