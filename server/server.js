@@ -3,63 +3,8 @@ var app = express();
 
 var chess = require('./chess').Chess;
 var path = require('path');
-//app.set('view engine', 'ejs');
-var evaluation = require('./boardEvaluation').boardEvaluation;
 
-
-var minimaxRoot =function(depth, game, isMaximisingPlayer) {
-
-    var newGameMoves = game.ugly_moves();
-    var bestMove = -9999;
-    var bestMoveFound;
-
-    for(var i = 0; i < newGameMoves.length; i++) {
-        var newGameMove = newGameMoves[i]
-        game.ugly_move(newGameMove);
-        var value = minimax(depth - 1, game, -10000, 10000, !isMaximisingPlayer);
-        game.undo();
-        if(value >= bestMove) {
-            bestMove = value;
-            bestMoveFound = newGameMove;
-        }
-    }
-    return bestMoveFound;
-};
-
-var minimax = function (depth, game, alpha, beta, isMaximisingPlayer) {
-    positionCount++;
-    if (depth === 0) {
-        return -evaluation(game.board());
-    }
-
-    var newGameMoves = game.ugly_moves();
-
-    if (isMaximisingPlayer) {
-        var bestMove = -9999;
-        for (var i = 0; i < newGameMoves.length; i++) {
-            game.ugly_move(newGameMoves[i]);
-            bestMove = Math.max(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer));
-            game.undo();
-            alpha = Math.max(alpha, bestMove);
-            if (beta <= alpha) {
-                return bestMove;
-            }
-        }
-        return bestMove;
-    } else {
-        var bestMove = 9999;
-        for (var i = 0; i < newGameMoves.length; i++) {
-            game.ugly_move(newGameMoves[i]);
-            bestMove = Math.min(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer));
-            game.undo();
-            beta = Math.min(beta, bestMove);
-            if (beta <= alpha) {
-                return bestMove;
-            }
-        }
-        return bestMove;
-    }
-};
+var minimaxRoot = require('./search').minimaxRoot;
 
 app.get('/', function(req, res){
     res.sendFile(path.resolve(__dirname +'/index.html'));
@@ -84,7 +29,7 @@ app.get('/bestMove', function (req, res) {
     positionCount = 0;
     
     var d = new Date().getTime();
-    var bestMove = minimaxRoot(depth, game, true);
+    var bestMove = minimaxRoot(depth, game);
 	console.log(bestMove);	
     var d2 = new Date().getTime();
     var moveTime = (d2 - d);

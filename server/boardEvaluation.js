@@ -79,40 +79,55 @@ var kingTableForWhite = [
 
 var kingTableForBlack = reverseArray(kingTableForWhite);
 
+var pawnValue = 10;
+var rookValue = 50;
+var knightValue = 30;
+var bishopValue = 30;
+var queenValue = 90;
+var kingValue = 900;
+
+var divider = 10;
+
 var boardEvaluation = function (board) {
     var score = 0;
     for (var i = 0; i < 8; i++) {
         for (var j = 0; j < 8; j++) {
-            score = score + getPieceValue(board[i][j], i ,j);
+			if(board[i][j] != null)
+				score = score + getPieceValue(board[i][j], i ,j);
         }
     }
     return score;
 };
 
-
 var getPieceValue = function (piece, x, y) {
-    if (piece === null) {
-        return 0;
-    }
-    var getFinalValue = function (piece, isWhite, x ,y) {
-        if (piece.type === 'p') {
-            return 1 + ( isWhite ? pawnTableForWhite[y][x] : pawnTableForBlack[y][x] );
-        } else if (piece.type === 'r') {
-            return 5 + ( isWhite ? rookTableForWhite[y][x] : rookTableForBlack[y][x] );
-        } else if (piece.type === 'n') {
-            return 3 + knightTable[y][x];
-        } else if (piece.type === 'b') {
-            return 3 + ( isWhite ? bishopTableForWhite[y][x] : bishopTableForBlack[y][x] );
-        } else if (piece.type === 'q') {
-            return 9 + queenTable[y][x];
-        } else if (piece.type === 'k') {
-            return 90 + ( isWhite ? kingTableForWhite[y][x] : kingTableForBlack[y][x] );
-        }
-        throw "Unknown piece type: " + piece.type;
-    };
-
-    var finalValue = getFinalValue(piece, piece.color === 'w', x ,y);
-    return piece.color === 'w' ? finalValue : -finalValue;
+    
+	var isWhite = (piece.color === 'w');
+	var finalValue = 0;
+    
+	switch(piece.type) {
+		case 'p':
+			finalValue = pawnValue + ( isWhite ? pawnTableForWhite[y][x] : pawnTableForBlack[y][x] ) / divider;
+			break;
+		case 'n':
+			finalValue = knightValue + knightTable[y][x] / divider;
+			break;
+		case 'b':
+			finalValue = bishopValue + ( isWhite ? bishopTableForWhite[y][x] : bishopTableForBlack[y][x] ) / divider;
+			break;
+		case 'r':
+			finalValue = rookValue + ( isWhite ? rookTableForWhite[y][x] : rookTableForBlack[y][x] ) / divider;
+			break;
+		case 'q':
+			finalValue = queenValue + queenTable[y][x] / divider;
+			break;
+		case 'k':
+			finalValue = kingValue + ( isWhite ? kingTableForWhite[y][x] : kingTableForBlack[y][x] ) / divider;
+			break;
+		default:
+			throw "Unknown piece type: " + piece.type;
+	}		
+	    
+    return isWhite ? finalValue : -finalValue;
 };
 
 /* export boardEvaluation object if using node or any other CommonJS compatible
