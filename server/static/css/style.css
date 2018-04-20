@@ -9,8 +9,15 @@
 }
 
 .move-history {
+    height : 100px;
     max-height: 100px;
-    overflow-y: scroll;
+    overflow-y: auto;
+    background-color: white;
+    width: 100%;
+    border-radius:4px;
+    border:1px solid #AAAAAA;
+
+
 }
 
 .center {
